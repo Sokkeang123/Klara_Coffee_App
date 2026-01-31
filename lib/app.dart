@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.landing: (context) => const LandingScreen(),
         AppRoutes.login: (context) => const LoginScreen(),
         AppRoutes.signup: (context) => const SignupScreen(),
-        // AppRoutes.home: (context) => const HomeScreen(),
+        AppRoutes.home: (context) => const HomeScreen(),
       },
     );
   }
