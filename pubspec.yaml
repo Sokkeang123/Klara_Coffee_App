@@ -61,15 +61,18 @@ flutter:
     - assets/images/landing_img.png
     - assets/images/matcha.png
     - assets/images/ice_milk_coffee.png
-    - assets/images/black_tea.png
+    # - assets/images/black_tea.png
     - assets/images/hot_chocolate.png
-    - assets/images/latte.png
+    # - assets/images/latte.png
     - assets/images/cappuccino.png
     - assets/images/coffee_shake.png
     - assets/images/espresso.png
-    - assets/images/green_tea.png
+    - assets/images/ice_milk_coffee.png
     - assets/images/mocha.png
-    - assets/images/iced_tea.png  
+    - assets/images/google_logo.png
+    - assets/images/google.png
+    - assets/images/login_image.png
+    # - assets/images/iced_tea.png  
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

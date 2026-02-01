@@ -4,13 +4,13 @@ import 'routes/app_routes.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/signup_screen.dart';
 import 'features/home/home_screen.dart';
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Coffee Shop',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.brown),
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.landing: (context) => const LandingScreen(),
         AppRoutes.login: (context) => const LoginScreen(),
         AppRoutes.signup: (context) => const SignupScreen(),
-        // AppRoutes.home: (context) => const HomeScreen(),
+        AppRoutes.home: (context) => const HomeScreen(),
       },
     );
   }
