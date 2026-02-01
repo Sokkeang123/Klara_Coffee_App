@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/routes/app_routes.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -36,7 +37,7 @@ class LoginScreen extends StatelessWidget {
 
                   // Coffee Image
                   Image.asset(
-                    'assets/images/login_image.png', // <-- place your image in assets folder
+                    'assets/images/login_image.png',
                     height: 120,
                   ),
                   const SizedBox(height: 16),
@@ -70,7 +71,9 @@ class LoginScreen extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        // TODO: Add forgot password logic
+                      },
                       child: const Text('Forgot Password ?'),
                     ),
                   ),
@@ -88,7 +91,10 @@ class LoginScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        // ✅ Navigate to Home after login
+                        Navigator.pushReplacementNamed(context, AppRoutes.home);
+                      },
                       child: const Text(
                         'Sign In',
                         style: TextStyle(fontSize: 16),
@@ -104,7 +110,10 @@ class LoginScreen extends StatelessWidget {
                     children: [
                       const Text("Don't have an account ?"),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          // ✅ Navigate to Signup
+                          Navigator.pushNamed(context, AppRoutes.signup);
+                        },
                         child: const Text('Sign up'),
                       ),
                     ],
@@ -127,9 +136,12 @@ class LoginScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        // ✅ After Google auth, navigate to Home
+                        Navigator.pushReplacementNamed(context, AppRoutes.home);
+                      },
                       icon: Image.asset(
-                        'assets/images/google.png', // <-- add Google logo here
+                        'assets/images/google.png',
                         height: 24,
                         width: 24,
                       ),
