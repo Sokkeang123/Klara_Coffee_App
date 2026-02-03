@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/features/auth/screens/landing_screen.dart';
+import 'package:flutter_application_1/features/auth/screens/login_screen.dart';
+import 'package:flutter_application_1/features/auth/screens/signup_screen.dart';
+import 'package:flutter_application_1/features/home/home_screen.dart';
 import 'routes/app_routes.dart';
-import 'features/auth/screens/login_screen.dart';
-import 'features/auth/screens/signup_screen.dart';
-import 'features/home/home_screen.dart';
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
