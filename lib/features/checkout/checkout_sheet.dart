@@ -17,125 +17,128 @@ class _CheckoutSheetState extends State<CheckoutSheet> {
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
     final total = cart.totalPrice;
-
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Material(
-        color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(18, 18, 18, 18 + bottomInset),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Row(
-                children: [
-                  const Text(
-                    "Checkout",
-                    style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900),
-                  ),
-                  const Spacer(),
-                  InkWell(
-                    onTap: () => Navigator.pop(context),
-                    borderRadius: BorderRadius.circular(18),
-                    child: const Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Icon(Icons.close, size: 28),
+    return Material(
+      color: Colors.transparent,
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(18, 18, 18, 18 + bottomInset),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      "Checkout",
+                      style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900),
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 12),
-              const _Line(),
-
-              _Row(
-                left: "Delivery",
-                right: method == null
-                    ? "Select Method"
-                    : (method!.isPickup ? "Pick up" : "Delivery"),
-                onTap: () async {
-                  final result = await Navigator.push<DeliveryMethodResult>(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const DeliveryMethodScreen(),
-                    ),
-                  );
-                  if (result != null) setState(() => method = result);
-                },
-              ),
-              const _Line(),
-
-              _Row(
-                left: "Payment",
-                rightWidget: const Text("🇱🇦", style: TextStyle(fontSize: 22)),
-                onTap: () {},
-              ),
-              const _Line(),
-
-              _Row(
-                left: "Promo Code",
-                right: "Pick discount",
-                onTap: () {},
-              ),
-              const _Line(),
-
-              const SizedBox(height: 14),
-
-              Row(
-                children: [
-                  const Text(
-                    "Total Cost",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-                  ),
-                  const Spacer(),
-                  Text(
-                    "\$${total.toStringAsFixed(2)}",
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 18),
-
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "By placing an order you agree to our\nTerms And Conditions",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF6B6B6B),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: cart.items.isEmpty ? null : () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFCDBAA5),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
+                    const Spacer(),
+                    InkWell(
+                      onTap: () => Navigator.pop(context),
                       borderRadius: BorderRadius.circular(18),
+                      child: const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Icon(Icons.close, size: 28),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+                const _Line(),
+
+                _Row(
+                  left: "Delivery",
+                  right: method == null
+                      ? "Select Method"
+                      : (method!.isPickup ? "Pick up" : "Delivery"),
+                  onTap: () async {
+                    final result = await Navigator.push<DeliveryMethodResult>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DeliveryMethodScreen(initial: method),
+                      ),
+                    );
+                    if (result != null) setState(() => method = result);
+                  },
+                ),
+                const _Line(),
+
+                _Row(
+                  left: "Payment",
+                  rightWidget: const Text("💳", style: TextStyle(fontSize: 22)),
+                  onTap: () {},
+                ),
+                const _Line(),
+
+                _Row(
+                  left: "Promo Code",
+                  right: "Pick discount",
+                  onTap: () {},
+                ),
+                const _Line(),
+
+                const SizedBox(height: 14),
+
+                Row(
+                  children: [
+                    const Text(
+                      "Total Cost",
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+                    ),
+                    const Spacer(),
+                    Text(
+                      "\$${total.toStringAsFixed(2)}",
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 18),
+
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "By placing an order you agree to our\nTerms And Conditions",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF6B6B6B),
                     ),
                   ),
-                  child: const Text(
-                    "Place Order",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                ),
+
+                const SizedBox(height: 18),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: cart.items.isEmpty ? null : () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFCDBAA5),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: const Text(
+                      "Place Order",
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

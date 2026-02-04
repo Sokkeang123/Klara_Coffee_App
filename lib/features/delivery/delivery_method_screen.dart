@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
+/// Returned back to CheckoutSheet after user taps Save.
 class DeliveryMethodResult {
   final bool isPickup;
 
-  // Pickup options
+  // Pickup
   final bool pickupNow;
   final DateTime? pickupDate;
   final TimeOfDay? pickupTime;
 
-  // Delivery options
+  // Delivery
   final String houseAddress;
   final String city;
   final String streetNumber;
@@ -26,29 +27,63 @@ class DeliveryMethodResult {
     required this.unit,
     required this.instructions,
   });
+
+  String get shortLabel {
+    if (isPickup) {
+      if (pickupNow) return "Pick up (now)";
+      return "Pick up (scheduled)";
+    }
+    return "Delivery";
+  }
 }
 
+/// Put this file here (based on your tree):
+/// lib/features/delivery/delivery_method_screen.dart
 class DeliveryMethodScreen extends StatefulWidget {
-  const DeliveryMethodScreen({super.key});
+  /// Optional: pass previously selected result so user can edit it.
+  final DeliveryMethodResult? initial;
+
+  const DeliveryMethodScreen({super.key, this.initial});
 
   @override
   State<DeliveryMethodScreen> createState() => _DeliveryMethodScreenState();
 }
 
 class _DeliveryMethodScreenState extends State<DeliveryMethodScreen> {
+  // Mode
   bool isPickup = true;
 
-  // pickup state
+  // Pickup
   bool pickupNow = true;
   DateTime? pickupDate;
   TimeOfDay? pickupTime = const TimeOfDay(hour: 8, minute: 0);
 
-  // delivery state
+  // Delivery controllers
   final houseCtl = TextEditingController();
   final cityCtl = TextEditingController();
   final streetCtl = TextEditingController();
   final unitCtl = TextEditingController();
   final instructionsCtl = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    final init = widget.initial;
+    if (init != null) {
+      isPickup = init.isPickup;
+
+      pickupNow = init.pickupNow;
+      pickupDate = init.pickupDate;
+      pickupTime = init.pickupTime;
+
+      houseCtl.text = init.houseAddress;
+      cityCtl.text = init.city;
+      streetCtl.text = init.streetNumber;
+      unitCtl.text = init.unit;
+      instructionsCtl.text = init.instructions;
+    }
+  }
 
   @override
   void dispose() {
@@ -68,9 +103,7 @@ class _DeliveryMethodScreenState extends State<DeliveryMethodScreen> {
       firstDate: now,
       lastDate: DateTime(now.year + 2),
     );
-    if (picked != null) {
-      setState(() => pickupDate = picked);
-    }
+    if (picked != null) setState(() => pickupDate = picked);
   }
 
   Future<void> _pickTime() async {
@@ -78,12 +111,50 @@ class _DeliveryMethodScreenState extends State<DeliveryMethodScreen> {
       context: context,
       initialTime: pickupTime ?? const TimeOfDay(hour: 8, minute: 0),
     );
-    if (picked != null) {
-      setState(() => pickupTime = picked);
-    }
+    if (picked != null) setState(() => pickupTime = picked);
+  }
+
+  String _formatDate(DateTime? d) {
+    if (d == null) return "Choose date";
+    return "${d.day}/${d.month}/${d.year}";
+  }
+
+  String _formatTime(TimeOfDay? t) {
+    if (t == null) return "Choose time";
+    final h = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
+    final m = t.minute.toString().padLeft(2, '0');
+    final ap = t.period == DayPeriod.am ? "AM" : "PM";
+    return "$h:$m$ap";
+  }
+
+  bool get _pickupValid {
+    if (!isPickup) return true;
+    if (pickupNow) return true;
+    return pickupDate != null && pickupTime != null;
+  }
+
+  bool get _deliveryValid {
+    if (isPickup) return true;
+    return houseCtl.text.trim().isNotEmpty &&
+        cityCtl.text.trim().isNotEmpty &&
+        streetCtl.text.trim().isNotEmpty;
   }
 
   void _save() {
+    if (!_pickupValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please choose pickup date & time.")),
+      );
+      return;
+    }
+
+    if (!_deliveryValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill required delivery fields.")),
+      );
+      return;
+    }
+
     final result = DeliveryMethodResult(
       isPickup: isPickup,
       pickupNow: isPickup ? pickupNow : false,
@@ -104,6 +175,10 @@ class _DeliveryMethodScreenState extends State<DeliveryMethodScreen> {
     const bg = Color(0xFFFFF1DF);
     const ink = Color(0xFF1F120A);
     const border = Color(0xFF2A150A);
+    const muted = Color(0xFF9B8F86);
+    const fieldFill = Color(0xFFFFF7ED);
+
+    final saveEnabled = isPickup ? _pickupValid : _deliveryValid;
 
     return Scaffold(
       backgroundColor: bg,
@@ -113,12 +188,12 @@ class _DeliveryMethodScreenState extends State<DeliveryMethodScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // top bar
+              // Top bar
               Row(
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: ink),
                   ),
                   const Expanded(
                     child: Center(
@@ -142,12 +217,13 @@ class _DeliveryMethodScreenState extends State<DeliveryMethodScreen> {
                 style: TextStyle(
                   letterSpacing: 0.5,
                   fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF9B8F86),
+                  fontWeight: FontWeight.w800,
+                  color: muted,
                 ),
               ),
               const SizedBox(height: 14),
 
+              // Toggle
               Row(
                 children: [
                   Expanded(
@@ -172,23 +248,38 @@ class _DeliveryMethodScreenState extends State<DeliveryMethodScreen> {
 
               Expanded(
                 child: SingleChildScrollView(
-                  child: isPickup
-                      ? _PickupForm(
-                          pickupNow: pickupNow,
-                          onPickupNowChanged: (v) =>
-                              setState(() => pickupNow = v),
-                          pickupDate: pickupDate,
-                          pickupTime: pickupTime,
-                          onPickDate: _pickDate,
-                          onPickTime: _pickTime,
-                        )
-                      : _DeliveryForm(
-                          houseCtl: houseCtl,
-                          cityCtl: cityCtl,
-                          streetCtl: streetCtl,
-                          unitCtl: unitCtl,
-                          instructionsCtl: instructionsCtl,
-                        ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: isPickup
+                        ? _PickupSection(
+                            key: const ValueKey("pickup"),
+                            pickupNow: pickupNow,
+                            onToggleNow: () {
+                              setState(() {
+                                pickupNow = !pickupNow;
+                                if (!pickupNow) {
+                                  pickupDate ??= DateTime.now();
+                                  pickupTime ??= const TimeOfDay(hour: 8, minute: 0);
+                                }
+                              });
+                            },
+                            dateText: _formatDate(pickupDate),
+                            timeText: _formatTime(pickupTime),
+                            enabled: !pickupNow,
+                            onPickDate: _pickDate,
+                            onPickTime: _pickTime,
+                          )
+                        : _DeliverySection(
+                            key: const ValueKey("delivery"),
+                            houseCtl: houseCtl,
+                            cityCtl: cityCtl,
+                            streetCtl: streetCtl,
+                            unitCtl: unitCtl,
+                            instructionsCtl: instructionsCtl,
+                            border: border,
+                            fill: fieldFill,
+                          ),
+                  ),
                 ),
               ),
 
@@ -198,7 +289,7 @@ class _DeliveryMethodScreenState extends State<DeliveryMethodScreen> {
                 width: double.infinity,
                 height: 54,
                 child: ElevatedButton(
-                  onPressed: _save,
+                  onPressed: saveEnabled ? _save : _save, // keep _save so it shows message
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFCDBAA5),
                     foregroundColor: Colors.white,
@@ -262,19 +353,23 @@ class _ModeButton extends StatelessWidget {
   }
 }
 
-class _PickupForm extends StatelessWidget {
+class _PickupSection extends StatelessWidget {
   final bool pickupNow;
-  final ValueChanged<bool> onPickupNowChanged;
-  final DateTime? pickupDate;
-  final TimeOfDay? pickupTime;
+  final VoidCallback onToggleNow;
+
+  final String dateText;
+  final String timeText;
+  final bool enabled;
   final VoidCallback onPickDate;
   final VoidCallback onPickTime;
 
-  const _PickupForm({
+  const _PickupSection({
+    super.key,
     required this.pickupNow,
-    required this.onPickupNowChanged,
-    required this.pickupDate,
-    required this.pickupTime,
+    required this.onToggleNow,
+    required this.dateText,
+    required this.timeText,
+    required this.enabled,
     required this.onPickDate,
     required this.onPickTime,
   });
@@ -284,31 +379,18 @@ class _PickupForm extends StatelessWidget {
     const ink = Color(0xFF1F120A);
     const border = Color(0xFF2A150A);
 
-    String dateText() {
-      if (pickupDate == null) return "Choose date";
-      return "${pickupDate!.day}/${pickupDate!.month}/${pickupDate!.year}";
-    }
-
-    String timeText() {
-      if (pickupTime == null) return "Choose time";
-      final h = pickupTime!.hourOfPeriod == 0 ? 12 : pickupTime!.hourOfPeriod;
-      final m = pickupTime!.minute.toString().padLeft(2, '0');
-      final ap = pickupTime!.period == DayPeriod.am ? "AM" : "PM";
-      return "$h:$m$ap";
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "Scheduled pick up\nChoose date",
-          style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: ink),
+          "Pickup options",
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: ink),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
 
-        // Date box
+        // Scheduled
         InkWell(
-          onTap: pickupNow ? null : onPickDate,
+          onTap: enabled ? onPickDate : null,
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(16),
@@ -320,34 +402,27 @@ class _PickupForm extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  dateText(),
+                  dateText,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: pickupNow ? Colors.grey : ink,
+                    color: enabled ? ink : Colors.grey,
                   ),
                 ),
                 const Spacer(),
-                Icon(Icons.calendar_month,
-                    color: pickupNow ? Colors.grey : ink),
+                Icon(Icons.calendar_month, color: enabled ? ink : Colors.grey),
               ],
             ),
           ),
         ),
 
-        const SizedBox(height: 20),
-
-        const Text(
-          "Choose time",
-          style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: ink),
-        ),
         const SizedBox(height: 14),
 
         InkWell(
-          onTap: pickupNow ? null : onPickTime,
+          onTap: enabled ? onPickTime : null,
           borderRadius: BorderRadius.circular(14),
           child: Container(
-            width: 170,
+            width: 190,
             height: 52,
             decoration: BoxDecoration(
               color: const Color(0xFFD9CFC6),
@@ -358,33 +433,33 @@ class _PickupForm extends StatelessWidget {
               children: [
                 const SizedBox(width: 16),
                 Text(
-                  timeText(),
+                  timeText,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: pickupNow ? Colors.grey : ink,
+                    color: enabled ? ink : Colors.grey,
                   ),
                 ),
                 const Spacer(),
-                Icon(Icons.unfold_more,
-                    color: pickupNow ? Colors.grey : ink),
+                Icon(Icons.unfold_more, color: enabled ? ink : Colors.grey),
                 const SizedBox(width: 12),
               ],
             ),
           ),
         ),
 
-        const SizedBox(height: 30),
+        const SizedBox(height: 22),
 
+        // Pickup now radio
         Row(
           children: [
             const Text(
               "Pickup now",
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: ink),
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: ink),
             ),
             const Spacer(),
             InkWell(
-              onTap: () => onPickupNowChanged(!pickupNow),
+              onTap: onToggleNow,
               borderRadius: BorderRadius.circular(20),
               child: Container(
                 width: 30,
@@ -410,30 +485,37 @@ class _PickupForm extends StatelessWidget {
           ],
         ),
 
-        const SizedBox(height: 14),
-
-        const Text(
-          "Your order will be ready in 10–12 minutes.",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: ink),
+        const SizedBox(height: 10),
+        Text(
+          pickupNow
+              ? "Your order will be ready in 10–12 minutes."
+              : "Scheduled pickup selected.",
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: ink),
         ),
       ],
     );
   }
 }
 
-class _DeliveryForm extends StatelessWidget {
+class _DeliverySection extends StatelessWidget {
   final TextEditingController houseCtl;
   final TextEditingController cityCtl;
   final TextEditingController streetCtl;
   final TextEditingController unitCtl;
   final TextEditingController instructionsCtl;
 
-  const _DeliveryForm({
+  final Color border;
+  final Color fill;
+
+  const _DeliverySection({
+    super.key,
     required this.houseCtl,
     required this.cityCtl,
     required this.streetCtl,
     required this.unitCtl,
     required this.instructionsCtl,
+    required this.border,
+    required this.fill,
   });
 
   @override
@@ -443,27 +525,36 @@ class _DeliveryForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 6),
+        const Text(
+          "Delivery address",
+          style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: ink),
+        ),
+        const SizedBox(height: 14),
+
         _Label("House Address *"),
-        _Field(controller: houseCtl, hint: "House address"),
+        _Field(controller: houseCtl, hint: "House address", border: border, fill: fill),
 
         const SizedBox(height: 16),
         _Label("City *"),
-        _Field(controller: cityCtl, hint: "City"),
+        _Field(controller: cityCtl, hint: "City", border: border, fill: fill),
 
         const SizedBox(height: 16),
         _Label("Street Number/Unit *"),
         Row(
           children: [
-            Expanded(child: _Field(controller: streetCtl, hint: "")),
+            Expanded(
+              child: _Field(controller: streetCtl, hint: "Street no.", border: border, fill: fill),
+            ),
             const SizedBox(width: 16),
-            Expanded(child: _Field(controller: unitCtl, hint: "")),
+            Expanded(
+              child: _Field(controller: unitCtl, hint: "Unit", border: border, fill: fill),
+            ),
           ],
         ),
 
         const SizedBox(height: 16),
-        _Label("Delivery Instructions:"),
-        _BigField(controller: instructionsCtl),
+        _Label("Delivery Instructions"),
+        _BigField(controller: instructionsCtl, border: border, fill: fill),
 
         const SizedBox(height: 10),
         const Text(
@@ -499,29 +590,36 @@ class _Label extends StatelessWidget {
 class _Field extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
+  final Color border;
+  final Color fill;
 
-  const _Field({required this.controller, required this.hint});
+  const _Field({
+    required this.controller,
+    required this.hint,
+    required this.border,
+    required this.fill,
+  });
 
   @override
   Widget build(BuildContext context) {
-    const border = Color(0xFF2A150A);
     return TextField(
       controller: controller,
       decoration: InputDecoration(
         hintText: hint,
         filled: true,
-        fillColor: const Color(0xFFFFF7ED),
+        fillColor: fill,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: border, width: 1.2),
+          borderSide: BorderSide(color: border, width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: border, width: 1.2),
+          borderSide: BorderSide(color: border, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: border, width: 1.2),
+          borderSide: BorderSide(color: border, width: 1.2),
         ),
       ),
     );
@@ -530,30 +628,36 @@ class _Field extends StatelessWidget {
 
 class _BigField extends StatelessWidget {
   final TextEditingController controller;
+  final Color border;
+  final Color fill;
 
-  const _BigField({required this.controller});
+  const _BigField({
+    required this.controller,
+    required this.border,
+    required this.fill,
+  });
 
   @override
   Widget build(BuildContext context) {
-    const border = Color(0xFF2A150A);
     return TextField(
       controller: controller,
       minLines: 6,
       maxLines: 8,
       decoration: InputDecoration(
         filled: true,
-        fillColor: const Color(0xFFFFF7ED),
+        fillColor: fill,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: border, width: 1.2),
+          borderSide: BorderSide(color: border, width: 1.2),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: border, width: 1.2),
+          borderSide: BorderSide(color: border, width: 1.2),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: border, width: 1.2),
+          borderSide: BorderSide(color: border, width: 1.2),
         ),
       ),
     );
