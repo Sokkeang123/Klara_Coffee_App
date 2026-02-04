@@ -7,4 +7,6 @@ class AppRoutes {
   static const menu = '/menu';
   static const favorite = '/favorite';
   static const cart = '/cart';
+  static const coffeeDetail = '/coffee-detail';
+  static const customizeDrink = '/customize-drink';
 }

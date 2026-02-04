@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/features/coffeeDetail/coffee_detail_screen.dart';
+import 'package:flutter_application_1/features/cart/cart_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_application_1/features/cart/cart_provider.dart';
 import 'package:flutter_application_1/components/bottom_nav_bar.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -130,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildHomeContent(),
             _buildMenuContent(),
             const Center(child: Text('Favorites')),
-            const Center(child: Text('Cart')),
+            const CartScreen(),
             const Center(child: Text('Profile')),
           ],
         ),
@@ -146,6 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     );
   }
+
   Widget _buildHomeContent() {
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -198,7 +202,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// ---------------- MENU ----------------
   Widget _buildMenuContent() {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -213,74 +216,102 @@ class _HomeScreenState extends State<HomeScreen> {
       },
     );
   }
+
+  // ✅ CORRECT FIX: no parent InkWell. Only left area navigates. + always works.
   Widget _buildMenuItem(String name, String price, String imagePath) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => CoffeeDetailScreen(
-              name: name,
-              price: price,
-              imagePath: imagePath,
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          // LEFT area clickable (navigate)
+          Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CoffeeDetailScreen(
+                      name: name,
+                      price: price,
+                      imagePath: imagePath,
+                    ),
+                  ),
+                );
+              },
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      bottomLeft: Radius.circular(16),
+                    ),
+                    child: Image.asset(
+                      imagePath,
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            price,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.brown[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        );
-      },
 
-      child: Card(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
-              ),
-              child: Image.asset(
-                imagePath,
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+          // RIGHT area (add to cart)
+          IconButton(
+            icon: const Icon(Icons.add_circle, color: Colors.brown, size: 34),
+            onPressed: () {
+              final unitPrice =
+                  double.tryParse(price.replaceAll('\$', '').trim()) ?? 0.0;
+
+              context.read<CartProvider>().addItem(
+                    CartItem(
+                      name: name,
+                      imagePath: imagePath,
+                      unitPrice: unitPrice,
+                      size: "medium",
+                      milk: "Oat Milk",
+                      whippedCream: true,
+                      syrup: "Chocolate",
+                      qty: 1,
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      price,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.brown[700],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.add_circle, color: Colors.brown),
-              onPressed: () {
-                // optional: add to cart
-              },
-            ),
-          ],
-        ),
+                  );
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Added to cart ✅")),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
