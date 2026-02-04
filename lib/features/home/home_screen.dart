@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/features/coffeeDetail/coffee_detail_screen.dart';
-
+import 'package:flutter_application_1/components/bottom_nav_bar.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -52,71 +52,71 @@ class _HomeScreenState extends State<HomeScreen> {
       'price': '\$2.3',
       'image': 'assets/images/macchiato.png',
     },
-    {
-      'name': 'Flat White',
-      'price': '\$2.4',
-      'image': 'assets/images/flat_white.png',
-    },
-    {
-      'name': 'Affogato',
-      'price': '\$2.6',
-      'image': 'assets/images/affogato.png',
-    },
-    {
-      'name': 'Irish Coffee',
-      'price': '\$3.0',
-      'image': 'assets/images/irish_coffee.png',
-    },
-    {
-      'name': 'Green Tea',
-      'price': '\$1.5',
-      'image': 'assets/images/green_tea.png',
-    },
-    {
-      'name': 'Matcha Latte',
-      'price': '\$2.5',
-      'image': 'assets/images/matcha_latte.png',
-    },
-    {
-      'name': 'Chai Tea',
-      'price': '\$2.0',
-      'image': 'assets/images/chai_tea.png',
-    },
-    {
-      'name': 'Hot Chocolate',
-      'price': '\$2.2',
-      'image': 'assets/images/hot_chocolate.png',
-    },
-    {
-      'name': 'Vanilla Frappe',
-      'price': '\$2.8',
-      'image': 'assets/images/vanilla_frappe.png',
-    },
-    {
-      'name': 'Caramel Frappe',
-      'price': '\$2.8',
-      'image': 'assets/images/caramel_frappe.png',
-    },
-    {
-      'name': 'Strawberry Smoothie',
-      'price': '\$3.0',
-      'image': 'assets/images/strawberry_smoothie.png',
-    },
-    {
-      'name': 'Mango Smoothie',
-      'price': '\$3.0',
-      'image': 'assets/images/mango_smoothie.png',
-    },
-    {
-      'name': 'Iced Coffee',
-      'price': '\$1.7',
-      'image': 'assets/images/iced_coffee.png',
-    },
-    {
-      'name': 'Lemon Tea',
-      'price': '\$1.8',
-      'image': 'assets/images/lemon_tea.png',
-    },
+    // {
+    //   'name': 'Flat White',
+    //   'price': '\$2.4',
+    //   'image': 'assets/images/flat_white.png',
+    // },
+    // {
+    //   'name': 'Affogato',
+    //   'price': '\$2.6',
+    //   'image': 'assets/images/affogato.png',
+    // },
+    // {
+    //   'name': 'Irish Coffee',
+    //   'price': '\$3.0',
+    //   'image': 'assets/images/irish_coffee.png',
+    // },
+    // {
+    //   'name': 'Green Tea',
+    //   'price': '\$1.5',
+    //   'image': 'assets/images/green_tea.png',
+    // },
+    // {
+    //   'name': 'Matcha Latte',
+    //   'price': '\$2.5',
+    //   'image': 'assets/images/matcha_latte.png',
+    // },
+    // {
+    //   'name': 'Chai Tea',
+    //   'price': '\$2.0',
+    //   'image': 'assets/images/chai_tea.png',
+    // },
+    // {
+    //   'name': 'Hot Chocolate',
+    //   'price': '\$2.2',
+    //   'image': 'assets/images/hot_chocolate.png',
+    // },
+    // {
+    //   'name': 'Vanilla Frappe',
+    //   'price': '\$2.8',
+    //   'image': 'assets/images/vanilla_frappe.png',
+    // },
+    // {
+    //   'name': 'Caramel Frappe',
+    //   'price': '\$2.8',
+    //   'image': 'assets/images/caramel_frappe.png',
+    // },
+    // {
+    //   'name': 'Strawberry Smoothie',
+    //   'price': '\$3.0',
+    //   'image': 'assets/images/strawberry_smoothie.png',
+    // },
+    // {
+    //   'name': 'Mango Smoothie',
+    //   'price': '\$3.0',
+    //   'image': 'assets/images/mango_smoothie.png',
+    // },
+    // {
+    //   'name': 'Iced Coffee',
+    //   'price': '\$1.7',
+    //   'image': 'assets/images/iced_coffee.png',
+    // },
+    // {
+    //   'name': 'Lemon Tea',
+    //   'price': '\$1.8',
+    //   'image': 'assets/images/lemon_tea.png',
+    // },
   ];
 
   @override
@@ -135,19 +135,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.brown[700],
-        unselectedItemColor: Colors.grey,
-        onTap: (index) => setState(() => _selectedIndex = index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Menu'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorite'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Cart'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
+     bottomNavigationBar: BottomNavBar(
+  currentIndex: _selectedIndex,
+  onTap: (index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  },
+),
+
     );
   }
   Widget _buildHomeContent() {
