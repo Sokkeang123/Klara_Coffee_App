@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../routes/app_routes.dart';
+import 'login_screen.dart'; // Ensure this import matches your file structure
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
@@ -7,125 +7,155 @@ class SignupScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF6A11CB),
-              Color(0xFF2575FC),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Card(
-              elevation: 10,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.person_add_alt_1,
-                      size: 60,
-                      color: Color(0xFF2575FC),
-                    ),
-                    const SizedBox(height: 16),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                const Text(
+                  'Sign Up With Klara Café L’D',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Thank You for using our service',
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+                const SizedBox(height: 20),
 
-                    const Text(
-                      'Create Account',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+                // Coffee Image Placeholder
+                const Icon(Icons.coffee_maker_outlined, size: 100, color: Color(0xFF6F4E37)),
 
-                    const Text(
-                      'Sign up to get started',
-                      style: TextStyle(color: Colors.grey),
-                    ),
+                const SizedBox(height: 20),
 
-                    const SizedBox(height: 24),
+                // Main Signup Card
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF2EEE7),
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _buildTextField(Icons.person_outline, 'Enter Name'),
+                      const SizedBox(height: 15),
+                      _buildTextField(Icons.email_outlined, 'Enter Email'),
+                      const SizedBox(height: 15),
+                      _buildTextField(Icons.lock_outline, 'Enter password', isPassword: true),
+                      const SizedBox(height: 15),
+                      _buildTextField(Icons.phone_outlined, 'Enter Phone Number'),
 
-                    /// Email
-                    TextField(
-                      decoration: InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton(
+                          onPressed: () {},
+                          child: const Text('Forgot Password', style: TextStyle(color: Colors.black87, fontSize: 12)),
                         ),
                       ),
-                    ),
 
-                    const SizedBox(height: 16),
-
-                    /// Password
-                    TextField(
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    /// Sign Up Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2575FC),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFCCCCCC),
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                            elevation: 0,
                           ),
+                          onPressed: () {},
+                          child: const Text('Sign Up', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      // NAVIGATION TO LOGIN
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
                             context,
-                            AppRoutes.home,
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
                           );
                         },
-                        child: const Text(
-                          'Sign Up',
-                          style: TextStyle(fontSize: 16),
+                        child: const Text.rich(
+                          TextSpan(
+                            text: "Don't have an account ? ",
+                            style: TextStyle(fontSize: 13, color: Colors.black87),
+                            children: [
+                              TextSpan(
+                                text: "Sign In",
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.brown),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
 
-                    const SizedBox(height: 20),
+                      const SizedBox(height: 15),
+                      const Row(
+                        children: [
+                          Expanded(child: Divider(color: Colors.black26)),
+                          Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('Or')),
+                          Expanded(child: Divider(color: Colors.black26)),
+                        ],
+                      ),
+                      const SizedBox(height: 15),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('Already have an account?'),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Login'),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6F4E37),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+                          ),
+                          icon: const Icon(Icons.g_mobiledata, size: 30),
+                          label: const Text('Google'),
+                          onPressed: () {},
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(IconData icon, String hint, {bool isPassword = false}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: const Color(0xFF8D6E63), width: 0.5),
+      ),
+      child: TextField(
+        obscureText: isPassword,
+        decoration: InputDecoration(
+          hintText: hint,
+          prefixIcon: Icon(icon, color: Colors.black87, size: 20),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
       ),
     );
