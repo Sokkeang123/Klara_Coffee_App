@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
+
+import 'package:flutter_application_1/routes/app_routes.dart';
 import 'package:flutter_application_1/features/auth/screens/landing_screen.dart';
 import 'package:flutter_application_1/features/auth/screens/login_screen.dart';
 import 'package:flutter_application_1/features/auth/screens/signup_screen.dart';
 import 'package:flutter_application_1/features/home/home_screen.dart';
-import 'routes/app_routes.dart';
-import 'features/auth/screens/login_screen.dart';
-import 'features/auth/screens/edit_profile_screen.dart';
-import 'features/auth/screens/signup_screen.dart';
-// import 'features/auth/screens/widgets/placeholder_screen.dart';
-import 'features/home/home_screen.dart';
-import 'features/auth/widgets/placeholder_screen.dart';
+import 'package:flutter_application_1/features/auth/screens/edit_profile_screen.dart';
+import 'package:flutter_application_1/features/auth/widgets/placeholder_screen.dart';
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -24,16 +22,16 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: AppRoutes.landing,
       routes: {
-            AppRoutes.landing: (context) => const LandingScreen(),
-            AppRoutes.login: (context) => const LoginScreen(),
-            AppRoutes.signup: (context) => const SignupScreen(),
-            AppRoutes.home: (context) => const HomeScreen(),
-            AppRoutes.editProfile: (context) => const EditProfileScreen(),
-            AppRoutes.menu: (context) => const PlaceholderScreen(title: "Menu"),
-            AppRoutes.favorite: (context) => const PlaceholderScreen(title: "Favorite"),
-            AppRoutes.cart: (context) => const PlaceholderScreen(title: "Cart"),
-            //  AppRoutes.editProfile: (context) => const EditProfileScreen(title: "Profile"),
-},
+        AppRoutes.landing: (context) => const LandingScreen(),
+        AppRoutes.login: (context) => const LoginScreen(),
+        AppRoutes.signup: (context) => const SignupScreen(),
+        AppRoutes.home: (context) => const HomeScreen(),
+        AppRoutes.editProfile: (context) => const EditProfileScreen(),
+        AppRoutes.menu: (context) => const PlaceholderScreen(title: "Menu"),
+        AppRoutes.favorite: (context) =>
+        const PlaceholderScreen(title: "Favorite"),
+        AppRoutes.cart: (context) => const PlaceholderScreen(title: "Cart"),
+      },
     );
   }
 }

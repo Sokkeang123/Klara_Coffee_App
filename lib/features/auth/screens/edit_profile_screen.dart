@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/storage/user_storage.dart';
+import '../data/services/profile_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -8,16 +10,157 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  // Matching the names from your image
-  final TextEditingController nameController = TextEditingController(text: "Ning Ning");
-  final TextEditingController emailController = TextEditingController(text: "ningning@gmail.com");
-  final TextEditingController phoneController = TextEditingController(text: "048264721");
+  final ProfileService _profileService = ProfileService();
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  bool _loading = false;
+
+  // ✅ ADD: track changes
+  bool _hasChanges = false;
+  bool _isLoadingUser = false;
+
+  // ✅ ADD: keep original values to compare
+  String _originalName = "";
+  String _originalEmail = "";
+  String _originalPhone = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _listenChanges(); // ✅ ADD
+    _loadUser();
+  }
+
+  void _listenChanges() {
+    void onChanged() {
+      if (_isLoadingUser) return;
+
+      final changed =
+          nameController.text.trim() != _originalName ||
+          emailController.text.trim() != _originalEmail ||
+          phoneController.text.trim() != _originalPhone ||
+          passwordController.text.trim().isNotEmpty;
+
+      if (changed != _hasChanges) {
+        setState(() => _hasChanges = changed);
+      } else {
+        // still update header name/email on typing
+        setState(() {});
+      }
+    }
+
+    nameController.addListener(onChanged);
+    emailController.addListener(onChanged);
+    phoneController.addListener(onChanged);
+    passwordController.addListener(onChanged);
+  }
+
+  Future<void> _loadUser() async {
+    _isLoadingUser = true;
+
+    final user = await UserStorage.getUser();
+    if (user != null) {
+      final n = (user["name"] ?? "").toString();
+      final e = (user["email"] ?? "").toString();
+      final p = (user["phone"] ?? "").toString();
+
+      _originalName = n;
+      _originalEmail = e;
+      _originalPhone = p;
+
+      setState(() {
+        nameController.text = n;
+        emailController.text = e;
+        phoneController.text = p;
+        _hasChanges = false;
+      });
+    }
+
+    _isLoadingUser = false;
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    // If nothing changed, do nothing
+    if (!_hasChanges) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No changes detected.")),
+      );
+      return;
+    }
+
+    // ✅ Confirm before updating
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Confirm Update"),
+        content: const Text("Do you want to update your profile information?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Yes, Update"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _loading = true);
+
+    try {
+      await _profileService.updateProfile(
+        name: nameController.text,
+        email: emailController.text,
+        phone: phoneController.text,
+        password: passwordController.text.isEmpty ? null : passwordController.text,
+      );
+
+      if (!mounted) return;
+
+      // ✅ update originals after success
+      _originalName = nameController.text.trim();
+      _originalEmail = emailController.text.trim();
+      _originalPhone = phoneController.text.trim();
+
+      passwordController.clear();
+
+      setState(() => _hasChanges = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile updated successfully ✅")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll("Exception: ", ""))),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
+    return Container(
+      color: Colors.white,
+      child: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -38,11 +181,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Main Profile Card
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF1EDE4), // Soft beige background
+                    color: const Color(0xFFF1EDE4),
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
@@ -55,19 +197,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Profile Header Info
                       Row(
                         children: [
                           const CircleAvatar(
                             radius: 35,
-                            backgroundImage: NetworkImage('https://placeholder.com/150'), // Replace with your asset
+                            backgroundImage: NetworkImage('https://via.placeholder.com/150'),
                           ),
                           const SizedBox(width: 15),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text("Ning Ning", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                              Text("ningning@gmail.com", style: TextStyle(color: Colors.black54)),
+                            children: [
+                              Text(
+                                nameController.text.isEmpty ? "—" : nameController.text,
+                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                emailController.text.isEmpty ? "—" : emailController.text,
+                                style: const TextStyle(color: Colors.black54),
+                              ),
                             ],
                           )
                         ],
@@ -79,19 +226,35 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Input Fields
                       _buildTextField(Icons.person_outline, nameController),
                       const SizedBox(height: 15),
                       _buildTextField(Icons.mail_outline, emailController),
                       const SizedBox(height: 15),
                       _buildTextField(Icons.phone_outlined, phoneController),
 
+                      const SizedBox(height: 15),
+                      _buildTextField(Icons.lock_outline, passwordController, isPassword: true),
+
                       const SizedBox(height: 20),
-                      const Align(
+
+                      Align(
                         alignment: Alignment.centerRight,
-                        child: Text(
-                          "Updated successfully !",
-                          style: TextStyle(color: Color(0xFF5CCB8A), fontWeight: FontWeight.bold),
+                        child: ElevatedButton(
+                          onPressed: _loading ? null : _save,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.brown,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                          child: _loading
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Text("Save"),
                         ),
                       ),
                     ],
@@ -103,12 +266,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
-  // Helper to build the styled text fields
-  Widget _buildTextField(IconData icon, TextEditingController controller) {
+  Widget _buildTextField(
+    IconData icon,
+    TextEditingController controller, {
+    bool isPassword = false,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -117,46 +282,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
       child: TextField(
         controller: controller,
+        obscureText: isPassword,
         decoration: InputDecoration(
           prefixIcon: Icon(icon, color: Colors.black87),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+          hintText: isPassword ? "*****" : null,
         ),
       ),
-    );
-  }
-
-  // Bottom Navigation Bar matching the image
-  Widget _buildBottomNav() {
-    return Container(
-      height: 90,
-      decoration: const BoxDecoration(
-        color: Color(0xFFEBD5B9), // Peach/Tan color
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navItem(Icons.home_outlined, "Home"),
-          _navItem(Icons.menu_book_outlined, "Menu"),
-          _navItem(Icons.favorite_outline, "Favorite"),
-          _navItem(Icons.shopping_cart_outlined, "Cart"),
-          _navItem(Icons.account_circle, "Profile", isActive: true),
-        ],
-      ),
-    );
-  }
-
-  Widget _navItem(IconData icon, String label, {bool isActive = false}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, size: 28, color: isActive ? Colors.brown : Colors.brown[700]),
-        Text(label, style: TextStyle(fontSize: 12, color: Colors.brown[900])),
-      ],
     );
   }
 }

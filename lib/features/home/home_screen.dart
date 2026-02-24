@@ -24,8 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     {'name': 'Cappuccino', 'price': '\$2.2', 'image': 'assets/images/cappuccino.png'},
     {'name': 'Mocha', 'price': '\$2.5', 'image': 'assets/images/mocha.png'},
     {'name': 'Espresso', 'price': '\$1.8', 'image': 'assets/images/espresso.png'},
-    {'name': 'Americano', 'price': '\$2.0', 'image': 'assets/images/americano.png'},
-    {'name': 'Macchiato', 'price': '\$2.3', 'image': 'assets/images/macchiato.png'},
+
   ];
 
   @override

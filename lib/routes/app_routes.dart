@@ -1,12 +1,12 @@
 class AppRoutes {
-  static const landing = '/';
-  static const login = '/login';
-  static const signup = '/signup';
-  static const home = '/home';
-  static const editProfile = '/edit-profile';
-  static const menu = '/menu';
-  static const favorite = '/favorite';
-  static const cart = '/cart';
-  static const coffeeDetail = '/coffee-detail';
-  static const customizeDrink = '/customize-drink';
+  static const String landing = '/';
+  static const String login = '/login';
+  static const String signup = '/signup';
+  static const String home = '/home';
+  static const String editProfile = '/edit-profile';
+  static const String menu = '/menu';
+  static const String favorite = '/favorite';
+  static const String cart = '/cart';
+  static const String coffeeDetail = '/coffee-detail';
+  static const String customizeDrink = '/customize-drink';
 }

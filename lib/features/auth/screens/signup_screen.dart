@@ -1,8 +1,72 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart'; // Ensure this import matches your file structure
+import 'login_screen.dart';
+import 'package:flutter_application_1/features/auth/data/services/auth_service.dart';
 
-class SignupScreen extends StatelessWidget {
+class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
+
+  @override
+  State<SignupScreen> createState() => _SignupScreenState();
+}
+
+class _SignupScreenState extends State<SignupScreen> {
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+
+  final _authService = AuthService();
+  bool _loading = false;
+
+  Future<void> _onSignup() async {
+    final name = _nameCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
+    final password = _passCtrl.text.trim();
+    final phone = _phoneCtrl.text.trim();
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty || phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill all fields")),
+      );
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      await _authService.signup(
+        name: name,
+        email: email,
+        phone: phone,
+        password: password,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Signup success ✅ Please login")),
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceAll("Exception: ", ""))),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    _phoneCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,19 +115,21 @@ class SignupScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      _buildTextField(Icons.person_outline, 'Enter Name'),
+                      _buildTextField(Icons.person_outline, 'Enter Name', controller: _nameCtrl),
                       const SizedBox(height: 15),
-                      _buildTextField(Icons.email_outlined, 'Enter Email'),
+                      _buildTextField(Icons.email_outlined, 'Enter Email', controller: _emailCtrl),
                       const SizedBox(height: 15),
-                      _buildTextField(Icons.lock_outline, 'Enter password', isPassword: true),
+                      _buildTextField(Icons.lock_outline, 'Enter password',
+                          isPassword: true, controller: _passCtrl),
                       const SizedBox(height: 15),
-                      _buildTextField(Icons.phone_outlined, 'Enter Phone Number'),
+                      _buildTextField(Icons.phone_outlined, 'Enter Phone Number', controller: _phoneCtrl),
 
                       Align(
                         alignment: Alignment.centerLeft,
                         child: TextButton(
                           onPressed: () {},
-                          child: const Text('Forgot Password', style: TextStyle(color: Colors.black87, fontSize: 12)),
+                          child: const Text('Forgot Password',
+                              style: TextStyle(color: Colors.black87, fontSize: 12)),
                         ),
                       ),
 
@@ -77,14 +143,20 @@ class SignupScreen extends StatelessWidget {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
                             elevation: 0,
                           ),
-                          onPressed: () {},
-                          child: const Text('Sign Up', style: TextStyle(fontWeight: FontWeight.bold)),
+                          onPressed: _loading ? null : _onSignup,
+                          child: _loading
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Text('Sign Up', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
                       ),
 
                       const SizedBox(height: 15),
 
-                      // NAVIGATION TO LOGIN
+                      // NAVIGATION TO LOGIN (keep same)
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -142,7 +214,12 @@ class SignupScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(IconData icon, String hint, {bool isPassword = false}) {
+  Widget _buildTextField(
+    IconData icon,
+    String hint, {
+    bool isPassword = false,
+    required TextEditingController controller,
+  }) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -150,6 +227,7 @@ class SignupScreen extends StatelessWidget {
         border: Border.all(color: const Color(0xFF8D6E63), width: 0.5),
       ),
       child: TextField(
+        controller: controller,
         obscureText: isPassword,
         decoration: InputDecoration(
           hintText: hint,
