@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/storage/user_storage.dart';
 import '../data/services/profile_service.dart';
 
+// ✅ ADD
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_application_1/core/constants/api_endpoints.dart';
+import 'package:flutter_application_1/features/auth/screens/login_screen.dart';
+
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
 
@@ -95,9 +101,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _save() async {
     // If nothing changed, do nothing
     if (!_hasChanges) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No changes detected.")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("No changes detected.")));
       return;
     }
 
@@ -129,7 +135,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         name: nameController.text,
         email: emailController.text,
         phone: phoneController.text,
-        password: passwordController.text.isEmpty ? null : passwordController.text,
+        password: passwordController.text.isEmpty
+            ? null
+            : passwordController.text,
       );
 
       if (!mounted) return;
@@ -155,6 +163,68 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) setState(() => _loading = false);
     }
   }
+
+  Future<void> _logout() async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text("Logout"),
+      content: const Text("Do you want to logout now?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text("Cancel"),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, true),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          child: const Text("Logout"),
+        ),
+      ],
+    ),
+  );
+
+  if (confirm != true) return;
+
+  setState(() => _loading = true);
+
+  try {
+    // If token is inside user map (optional)
+    final user = await UserStorage.getUser();
+    final token = user?["token"];
+
+    if (token != null) {
+      await http.post(
+        Uri.parse(ApiEndpoints.logout),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({}),
+      );
+    }
+
+    // ✅ CLEAR ONLY USER
+    await UserStorage.clearUser();
+
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  } catch (e) {
+    // Force logout locally
+    await UserStorage.clearUser();
+
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  } finally {
+    if (mounted) setState(() => _loading = false);
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -201,28 +271,40 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         children: [
                           const CircleAvatar(
                             radius: 35,
-                            backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+                            backgroundImage: NetworkImage(
+                              'https://via.placeholder.com/150',
+                            ),
                           ),
                           const SizedBox(width: 15),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                nameController.text.isEmpty ? "—" : nameController.text,
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                nameController.text.isEmpty
+                                    ? "—"
+                                    : nameController.text,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               Text(
-                                emailController.text.isEmpty ? "—" : emailController.text,
+                                emailController.text.isEmpty
+                                    ? "—"
+                                    : emailController.text,
                                 style: const TextStyle(color: Colors.black54),
                               ),
                             ],
-                          )
+                          ),
                         ],
                       ),
                       const SizedBox(height: 25),
                       const Text(
                         "Account setting",
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       const SizedBox(height: 20),
 
@@ -233,7 +315,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       _buildTextField(Icons.phone_outlined, phoneController),
 
                       const SizedBox(height: 15),
-                      _buildTextField(Icons.lock_outline, passwordController, isPassword: true),
+                      _buildTextField(
+                        Icons.lock_outline,
+                        passwordController,
+                        isPassword: true,
+                      ),
 
                       const SizedBox(height: 20),
 
@@ -252,9 +338,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ? const SizedBox(
                                   height: 18,
                                   width: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Text("Save"),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _loading ? null : _logout,
+                          icon: const Icon(Icons.logout, color: Colors.red),
+                          label: const Text(
+                            "Logout",
+                            style: TextStyle(color: Colors.red),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.red),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
                         ),
                       ),
                     ],
@@ -286,7 +395,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         decoration: InputDecoration(
           prefixIcon: Icon(icon, color: Colors.black87),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 15,
+            horizontal: 10,
+          ),
           hintText: isPassword ? "*****" : null,
         ),
       ),

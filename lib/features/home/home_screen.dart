@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/core/constants/api_endpoints.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_application_1/features/coffeeDetail/coffee_detail_screen.dart';
 import 'package:flutter_application_1/features/cart/cart_screen.dart';
 import 'package:flutter_application_1/features/cart/cart_provider.dart';
 import 'package:flutter_application_1/components/bottom_nav_bar.dart';
 import 'package:flutter_application_1/features/auth/screens/edit_profile_screen.dart';
+import 'package:flutter_application_1/features/menu/provider/menu_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,18 +16,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  
   int _selectedIndex = 0;
 
-  final List<Map<String, String>> dailySpecials = [
-    {'name': 'Ice Milk Coffee', 'price': '\$1.5', 'image': 'assets/images/matcha.png'},
-    {'name': 'Hot Chocolate', 'price': '\$1.5', 'image': 'assets/images/hot_chocolate.png'},
-    {'name': 'Coffee Shake', 'price': '\$2.0', 'image': 'assets/images/coffee_shake.png'},
-    {'name': 'Cappuccino', 'price': '\$2.2', 'image': 'assets/images/cappuccino.png'},
-    {'name': 'Mocha', 'price': '\$2.5', 'image': 'assets/images/mocha.png'},
-    {'name': 'Espresso', 'price': '\$1.8', 'image': 'assets/images/espresso.png'},
-
-  ];
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => context.read<MenuProvider>().fetchMenus());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
           index: _selectedIndex,
           children: [
             _buildHomeContent(),
-            _buildMenuContent(), // Now uses the menu content logic
+            _buildMenuContent(), // Menu tab
             const Center(child: Text('Favorites')),
             const CartScreen(),
             const EditProfileScreen(),
@@ -52,77 +49,132 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ✅ HOME TAB (UI SAME, DATA FROM API)
   Widget _buildHomeContent() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 20),
-          const Center(
-            child: Text(
-              'Klara Kafé L’D',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            ),
+    return Consumer<MenuProvider>(
+      builder: (context, menuProv, _) {
+        if (menuProv.loading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (menuProv.error != null) {
+          return Center(child: Text(menuProv.error!));
+        }
+
+        if (menuProv.menus.isEmpty) {
+          return const Center(child: Text("No menu items"));
+        }
+
+        // ✅ Convert DB menus -> your old UI Map (name/price/image)
+        final apiItems = menuProv.menus.map<Map<String, String>>((m) {
+          final price = m.price.toStringAsFixed(2);
+          return {
+            "name": m.name,
+            "price": "\$$price",
+            // keep old UI image (do not change UI)
+            "image": "assets/images/matcha.png",
+          };
+        }).toList();
+
+        // ✅ Split into 2 sections (keep UI same)
+        final dailySpecials = apiItems.take(6).toList(); // horizontal list
+        final favorites = apiItems; // vertical list
+
+        return SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              const Center(
+                child: Text(
+                  'Klara Kafé L’D',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Good Morning ☀️',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 10),
+
+              // Search Bar (same)
+              TextField(
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: 'Search your coffee...',
+                  filled: true,
+                  fillColor: const Color(0xFFEBE3D9),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Promo Banner (same) - if it fails on web, it’s internet permission/cors, UI still same
+              ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Image.network(
+                  '../../../assets/images/promo_banner.png',
+                  height: 190,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: 190,
+                    width: double.infinity,
+                    alignment: Alignment.center,
+                    color: const Color(0xFFEBE3D9),
+                    child: const Text("Banner not available"),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 25),
+              const Text(
+                'Daily Specials',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 15),
+
+              // Horizontal List (same UI)
+              SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: dailySpecials.length,
+                  itemBuilder: (context, index) =>
+                      _buildSpecialCard(dailySpecials[index]),
+                ),
+              ),
+
+              const SizedBox(height: 25),
+              const Text(
+                'Customer Favorite',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 15),
+
+              // Vertical List (same UI)
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: favorites.length,
+                itemBuilder: (context, index) =>
+                    _buildFavoriteItem(favorites[index]),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
-          const Text('Good Morning ☀️', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 10),
-
-          // Search Bar
-          TextField(
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.search),
-              hintText: 'Search your coffee...',
-              filled: true,
-              fillColor: const Color(0xFFEBE3D9),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Promo Banner
-          ClipRRect(
-            borderRadius: BorderRadius.circular(15),
-            child: Image.network(
-              'https://i.pinimg.com/1200x/38/8e/64/388e6440cb45dd4a9fd54f156b3e3c4f.jpg',
-              height: 140, width: double.infinity, fit: BoxFit.cover,
-            ),
-          ),
-
-          const SizedBox(height: 25),
-          const Text('Daily Specials', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 15),
-
-          // Horizontal List
-          SizedBox(
-            height: 200,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              itemCount: dailySpecials.length,
-              itemBuilder: (context, index) => _buildSpecialCard(dailySpecials[index]),
-            ),
-          ),
-
-          const SizedBox(height: 25),
-          const Text('Customer Favorite', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 15),
-
-          // Vertical List
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: dailySpecials.length,
-            itemBuilder: (context, index) => _buildFavoriteItem(dailySpecials[index]),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  // Horizontal Card with Navigation and Add to Cart
+  // Horizontal Card with Navigation and Add to Cart (unchanged UI)
   Widget _buildSpecialCard(Map<String, String> item) {
     return Container(
       width: 140,
@@ -139,23 +191,40 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Expanded(
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(13)),
-                child: Image.asset(item['image']!, width: double.infinity, fit: BoxFit.cover),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(13),
+                ),
+                child: Image.asset(
+                  item['image']!,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(item['name']!, maxLines: 1, style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(
+                item['name']!,
+                maxLines: 1,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 4.0,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(item['price']!),
                   GestureDetector(
                     onTap: () => _addToCart(item),
-                    child: const Icon(Icons.add_circle, size: 24, color: Colors.brown),
+                    child: const Icon(
+                      Icons.add_circle,
+                      size: 24,
+                      color: Colors.brown,
+                    ),
                   ),
                 ],
               ),
@@ -166,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Vertical Item with Navigation and Add to Cart
+  // Vertical Item with Navigation and Add to Cart (unchanged UI)
   Widget _buildFavoriteItem(Map<String, String> item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -182,19 +251,43 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              Image.asset(item['image']!, height: 60, width: 60),
+              // Image.asset(item['image']!, height: 60, width: 60),
+              Image.network(
+                item['image']!,
+                height: 60,
+                width: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Image.asset(
+                  "assets/images/matcha.png",
+                  height: 60,
+                  width: 60,
+                ),
+              ),
               const SizedBox(width: 15),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item['name']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(item['price']!, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text(
+                      item['name']!,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      item['price']!,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.add_circle, color: Colors.brown, size: 30),
+                icon: const Icon(
+                  Icons.add_circle,
+                  color: Colors.brown,
+                  size: 30,
+                ),
                 onPressed: () => _addToCart(item),
               ),
             ],
@@ -204,15 +297,37 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ✅ MENU TAB (UI same, data from API)
   Widget _buildMenuContent() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: dailySpecials.length,
-      itemBuilder: (context, index) => _buildFavoriteItem(dailySpecials[index]),
+    return Consumer<MenuProvider>(
+      builder: (context, menuProv, _) {
+        if (menuProv.loading)
+          return const Center(child: CircularProgressIndicator());
+        if (menuProv.error != null) return Center(child: Text(menuProv.error!));
+        if (menuProv.menus.isEmpty)
+          return const Center(child: Text("No menu items"));
+
+        final items = menuProv.menus.map<Map<String, String>>((m) {
+          final price = m.price.toStringAsFixed(2);
+          return {
+            "name": m.name,
+            "price": "\$$price",
+            "image": m.imageUrl != null
+                ? "${ApiEndpoints.baseUrl}${m.imageUrl}"
+                : "assets/images/matcha.png", // keep UI
+          };
+        }).toList();
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: items.length,
+          itemBuilder: (context, index) => _buildFavoriteItem(items[index]),
+        );
+      },
     );
   }
 
-  // Helper: Navigation Logic
+  // Helper: Navigation Logic (unchanged)
   void _navigateToDetail(Map<String, String> item) {
     Navigator.push(
       context,
@@ -226,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Helper: Add to Cart Logic
+  // Helper: Add to Cart Logic (unchanged)
   void _addToCart(Map<String, String> item) {
     final price = double.tryParse(item['price']!.replaceAll('\$', '')) ?? 0.0;
     context.read<CartProvider>().addItem(
@@ -241,8 +356,9 @@ class _HomeScreenState extends State<HomeScreen> {
         qty: 1,
       ),
     );
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("${item['name']} added to cart!")),
-    );
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text("${item['name']} added to cart!")));
   }
 }

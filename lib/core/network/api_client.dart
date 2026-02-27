@@ -50,7 +50,6 @@ import 'package:http/http.dart' as http;
 import '../storage/token_storage.dart';
 
 class ApiClient {
-
   Map<String, dynamic> _safeJsonMap(String body) {
     try {
       final decoded = jsonDecode(body);
@@ -132,5 +131,30 @@ class ApiClient {
     }
 
     throw Exception(data["message"] ?? "Request failed (${res.statusCode})");
+  }
+
+  /// ========================
+  /// GET   ✅ NEW (FOR MENU)
+  /// ========================
+  Future<dynamic> get(String url, {bool auth = false}) async {
+    final headers = <String, String>{"Accept": "application/json"};
+
+    if (auth) {
+      final token = await TokenStorage.getToken();
+      if (token == null || token.isEmpty) {
+        throw Exception("No token found. Please login again.");
+      }
+      headers["Authorization"] = "Bearer $token";
+    }
+
+    final res = await http.get(Uri.parse(url), headers: headers);
+
+    final decoded = jsonDecode(res.body);
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      return decoded;
+    }
+
+    throw Exception(decoded["message"] ?? "Request failed (${res.statusCode})");
   }
 }

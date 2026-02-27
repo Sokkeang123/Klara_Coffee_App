@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'routes/app_routes.dart';
-// import 'features/auth/ui/login_screen.dart';
-// import 'features/auth/ui/signup_screen.dart';
-// import 'screens/home_screen.dart';
+import 'package:provider/provider.dart';
+
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/signup_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/cart/cart_provider.dart';
+import 'features/menu/provider/menu_provider.dart';
+import 'routes/app_routes.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,17 +17,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login,
-      routes: {
-        AppRoutes.login: (_) => const LoginScreen(),
-        AppRoutes.signup: (_) => const SignupScreen(),
-        AppRoutes.home: (_) => const HomeScreen(),
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => MenuProvider()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        initialRoute: AppRoutes.login,
+        routes: {
+          AppRoutes.login: (_) => const LoginScreen(),
+          AppRoutes.signup: (_) => const SignupScreen(),
+          AppRoutes.home: (_) => const HomeScreen(),
+        },
+      ),
     );
   }
 }
+
 
 //
 // import 'package:flutter/material.dart';
