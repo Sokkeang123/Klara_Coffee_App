@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:flutter_application_1/features/cart/cart_provider.dart';
 import 'package:flutter_application_1/features/cart/cart_screen.dart';
-import 'package:flutter_application_1/features/coffeeDetail/customize_drink_screen.dart';
+// import 'package:flutter_application_1/features/coffeeDetail/customize_drink_screen.dart';
+import '../coffeeDetail/customize_drink_screen.dart';
 
 enum CoffeeSize { small, medium, large }
 
 class CoffeeDetailScreen extends StatefulWidget {
+  final int menuId;
   final String name;
   final String price;
   final String imagePath;
 
   const CoffeeDetailScreen({
     super.key,
+    required this.menuId,
     required this.name,
     required this.price,
     required this.imagePath,
@@ -61,14 +65,18 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
       body: SafeArea(
         child: Stack(
           children: [
+            // background split
             Column(
               children: const [
                 Expanded(flex: 46, child: ColoredBox(color: bgDark)),
                 Expanded(flex: 54, child: ColoredBox(color: bgLight)),
               ],
             ),
+
+            // main content
             Column(
               children: [
+                // top bar
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
                   child: Row(
@@ -97,7 +105,10 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 16),
+
+                // image
                 SizedBox(
                   height: 240,
                   child: Center(
@@ -108,11 +119,13 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
                     ),
                   ),
                 ),
+
+                // ✅ IMPORTANT FIX:
+                // Keep bottom button fixed, make middle scrollable
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: ListView(
                       children: [
                         Row(
                           children: [
@@ -152,6 +165,7 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
+
                         Row(
                           children: CoffeeSize.values.map((s) {
                             final label =
@@ -161,14 +175,17 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
                                 onTap: () => setState(() => selectedSize = s),
                                 child: Container(
                                   height: 42,
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: selectedSize == s
                                         ? const Color(0xFFD6BFA6)
-                                        : bgLight,
+                                        : const Color(0xFFF6E6D5),
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: textDark),
+                                    border: Border.all(
+                                      color: const Color(0xFF1F120A),
+                                    ),
                                   ),
                                   child: Center(
                                     child: Text(
@@ -183,13 +200,16 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
                             );
                           }).toList(),
                         ),
+
                         const SizedBox(height: 22),
                         const Text(
                           "Customize your coffee",
                           style: TextStyle(fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: 8),
-                        Container(height: 1, color: line),
+                        Container(height: 1, color: const Color(0xFFD9C4AE)),
+
+                        // ✅ IMPORTANT: you were pushing CartSheet by mistake
                         ListTile(
                           title: Text(
                             customize == null
@@ -200,18 +220,21 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
                           onTap: () async {
                             final result =
                                 await Navigator.push<CustomizeDrinkResult>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CartSheet(),
-                              ),
-                            );
-                            if (result != null) {
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => CustomizeDrinkScreen(
+                                      initial: customize, imagePath: '',
+                                    ),
+                                  ),
+                                );
+                            if (result != null)
                               setState(() => customize = result);
-                            }
                           },
                         ),
-                        Container(height: 1, color: line),
+
+                        Container(height: 1, color: const Color(0xFFD9C4AE)),
                         const SizedBox(height: 12),
+
                         Row(
                           children: [
                             const Text(
@@ -228,7 +251,9 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
                             ),
                           ],
                         ),
-                        const Spacer(),
+
+                        const SizedBox(height: 18),
+
                         SizedBox(
                           width: double.infinity,
                           height: 54,
@@ -241,28 +266,23 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
                             ),
                             onPressed: () {
                               context.read<CartProvider>().addItem(
-                                    CartItem(
-                                      name: widget.name,
-                                      imagePath: widget.imagePath,
-                                      unitPrice: _priceToDouble(widget.price),
-                                      size: sizeText,
-                                      milk: customize?.milk ?? "Oat Milk",
-                                      whippedCream:
-                                          customize?.whippedCream ?? true,
-                                      syrup: customize?.syrup ?? "Chocolate",
-                                      qty: qty,
-                                    ),
-                                  );
+                                CartItem(
+                                  menuId: widget.menuId,
+                                  name: widget.name,
+                                  imagePath: widget.imagePath,
+                                  unitPrice: _priceToDouble(widget.price),
+                                  size: sizeText,
+                                  milk: customize?.milk ?? "Oat Milk",
+                                  whippedCream: customize?.whippedCream ?? true,
+                                  syrup: customize?.syrup ?? "Chocolate",
+                                  qty: qty,
+                                ),
+                              );
 
                               showModalBottomSheet(
                                 context: context,
                                 isScrollControlled: true,
-                                isDismissible: true,
-                                enableDrag: true,
-                                showDragHandle: false,
                                 backgroundColor: Colors.transparent,
-
-                                // ✅ IMPORTANT CHANGE HERE:
                                 builder: (_) => const CartSheet(),
                               );
                             },

@@ -17,7 +17,7 @@ class CustomizeDrinkScreen extends StatefulWidget {
 
   const CustomizeDrinkScreen({
     super.key,
-    required this.imagePath,
+    required this.imagePath, CustomizeDrinkResult? initial,
   });
 
   @override

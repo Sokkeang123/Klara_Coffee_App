@@ -66,9 +66,10 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         // ✅ Convert DB menus -> your old UI Map (name/price/image)
-        final apiItems = menuProv.menus.map<Map<String, String>>((m) {
+        final apiItems = menuProv.menus.map<Map<String, dynamic>>((m) {
           final price = m.price.toStringAsFixed(2);
           return {
+            "id": m.id,
             "name": m.name,
             "price": "\$$price",
             // keep old UI image (do not change UI)
@@ -175,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Horizontal Card with Navigation and Add to Cart (unchanged UI)
-  Widget _buildSpecialCard(Map<String, String> item) {
+  Widget _buildSpecialCard(Map<String, dynamic> item) {
     return Container(
       width: 140,
       margin: const EdgeInsets.only(right: 12, bottom: 5),
@@ -236,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Vertical Item with Navigation and Add to Cart (unchanged UI)
-  Widget _buildFavoriteItem(Map<String, String> item) {
+  Widget _buildFavoriteItem(Map<String, dynamic> item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -307,9 +308,10 @@ class _HomeScreenState extends State<HomeScreen> {
         if (menuProv.menus.isEmpty)
           return const Center(child: Text("No menu items"));
 
-        final items = menuProv.menus.map<Map<String, String>>((m) {
+        final items = menuProv.menus.map<Map<String, dynamic>>((m) {
           final price = m.price.toStringAsFixed(2);
           return {
+             "id": m.id,
             "name": m.name,
             "price": "\$$price",
             "image": m.imageUrl != null
@@ -328,11 +330,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Helper: Navigation Logic (unchanged)
-  void _navigateToDetail(Map<String, String> item) {
+  void _navigateToDetail(Map<String, dynamic> item) {
+    final int menuId = item["id"] as int;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => CoffeeDetailScreen(
+          menuId: menuId,
           name: item['name']!,
           price: item['price']!,
           imagePath: item['image']!,
@@ -342,10 +346,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Helper: Add to Cart Logic (unchanged)
-  void _addToCart(Map<String, String> item) {
+  void _addToCart(Map<String, dynamic> item) {
     final price = double.tryParse(item['price']!.replaceAll('\$', '')) ?? 0.0;
+    final menuId = item["id"] as int;
     context.read<CartProvider>().addItem(
       CartItem(
+        menuId: menuId,
         name: item['name']!,
         imagePath: item['image']!,
         unitPrice: price,
