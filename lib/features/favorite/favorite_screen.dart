@@ -18,7 +18,7 @@ class FavoriteScreen extends StatelessWidget {
       debugPrint("Favourite items length: ${fav.items.length}");
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Favourite")),
+      appBar: AppBar(title: const Text("Your Favourite")),
       
       body: fav.items.isEmpty
           ? const Center(child: Text("No favourite items yet ❤️"))
