@@ -8,7 +8,7 @@ import 'features/home/home_screen.dart';
 import 'features/cart/cart_provider.dart';
 import 'features/menu/provider/menu_provider.dart';
 import 'routes/app_routes.dart';
-
+import 'features/favorite/favorite_provider.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -23,6 +23,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CartProvider()),
         ChangeNotifierProvider(create: (_) => MenuProvider()),
         ChangeNotifierProvider(create: (_) => OrderProvider()),
+        ChangeNotifierProvider(create: (_) => FavoriteProvider()),
+
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

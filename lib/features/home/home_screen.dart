@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/constants/api_endpoints.dart';
+import 'package:flutter_application_1/core/utils/safe_parse.dart';
+import 'package:flutter_application_1/features/favorite/favorite_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_application_1/features/coffeeDetail/coffee_detail_screen.dart';
 import 'package:flutter_application_1/features/cart/cart_screen.dart';
@@ -34,7 +36,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildHomeContent(),
             _buildMenuContent(), // Menu tab
-            const Center(child: Text('Favorites')),
+            // const Center(child: Text('Favorites')),
+            const FavoriteScreen(),
             const CartScreen(),
             const EditProfileScreen(),
           ],
@@ -311,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final items = menuProv.menus.map<Map<String, dynamic>>((m) {
           final price = m.price.toStringAsFixed(2);
           return {
-             "id": m.id,
+            "id": m.id,
             "name": m.name,
             "price": "\$$price",
             "image": m.imageUrl != null
@@ -331,29 +334,59 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Helper: Navigation Logic (unchanged)
   void _navigateToDetail(Map<String, dynamic> item) {
-    final int menuId = item["id"] as int;
+    final int menuId = safeInt(item["id"]); // ✅ FIXED
+
+    if (menuId == 0) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Menu ID missing")));
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => CoffeeDetailScreen(
           menuId: menuId,
-          name: item['name']!,
-          price: item['price']!,
-          imagePath: item['image']!,
+          name: item['name']!.toString(),
+          price: item['price']!.toString(),
+          imagePath: item['image']!.toString(),
         ),
       ),
     );
   }
+  // void _navigateToDetail(Map<String, dynamic> item) {
+  //   final int menuId = item["id"] as int;
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (_) => CoffeeDetailScreen(
+  //         menuId: menuId,
+  //         name: item['name']!,
+  //         price: item['price']!,
+  //         imagePath: item['image']!,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // Helper: Add to Cart Logic (unchanged)
   void _addToCart(Map<String, dynamic> item) {
     final price = double.tryParse(item['price']!.replaceAll('\$', '')) ?? 0.0;
-    final menuId = item["id"] as int;
+    final menuId = safeInt(item["id"]); // ✅ FIXED
+
+    if (menuId == 0) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Menu ID missing")));
+      return;
+    }
+
     context.read<CartProvider>().addItem(
       CartItem(
         menuId: menuId,
-        name: item['name']!,
-        imagePath: item['image']!,
+        name: item['name']!.toString(),
+        imagePath: item['image']!.toString(),
         unitPrice: price,
         size: "medium",
         milk: "Regular",
@@ -367,4 +400,25 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
     ).showSnackBar(SnackBar(content: Text("${item['name']} added to cart!")));
   }
+  // void _addToCart(Map<String, dynamic> item) {
+  //   final price = double.tryParse(item['price']!.replaceAll('\$', '')) ?? 0.0;
+  //   final menuId = item["id"] as int;
+  //   context.read<CartProvider>().addItem(
+  //     CartItem(
+  //       menuId: menuId,
+  //       name: item['name']!,
+  //       imagePath: item['image']!,
+  //       unitPrice: price,
+  //       size: "medium",
+  //       milk: "Regular",
+  //       whippedCream: false,
+  //       syrup: "None",
+  //       qty: 1,
+  //     ),
+  //   );
+
+  //   ScaffoldMessenger.of(
+  //     context,
+  //   ).showSnackBar(SnackBar(content: Text("${item['name']} added to cart!")));
+  // }
 }

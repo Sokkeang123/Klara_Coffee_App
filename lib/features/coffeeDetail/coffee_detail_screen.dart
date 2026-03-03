@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/features/favorite/favorite_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_application_1/features/cart/cart_provider.dart';
 import 'package:flutter_application_1/features/cart/cart_screen.dart';
 // import 'package:flutter_application_1/features/coffeeDetail/customize_drink_screen.dart';
 import '../coffeeDetail/customize_drink_screen.dart';
+import 'package:flutter_application_1/core/utils/safe_parse.dart';
 
 enum CoffeeSize { small, medium, large }
 
@@ -30,6 +32,7 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
   int qty = 1;
   CoffeeSize selectedSize = CoffeeSize.medium;
   CustomizeDrinkResult? customize;
+  bool isFavorite = false;
 
   double _priceToDouble(String p) {
     return double.tryParse(p.replaceAll('\$', '').trim()) ?? 0.0;
@@ -59,6 +62,8 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
     const bgLight = Color(0xFFF6E6D5);
     const textDark = Color(0xFF1F120A);
     const line = Color(0xFFD9C4AE);
+    final fav = context.watch<FavoriteProvider>();
+    final isFav = fav.isFavorite(widget.menuId);
 
     return Scaffold(
       backgroundColor: bgLight,
@@ -85,23 +90,58 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
                         onTap: () => Navigator.pop(context),
                         child: const Icon(
                           Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white,
+                          color: Color.fromARGB(255, 19, 11, 11),
                         ),
                       ),
                       const Spacer(),
                       const Text(
                         "Klara Kafé L’D",
                         style: TextStyle(
-                          color: Color(0xFFF2DFCC),
+                          color: Color.fromARGB(255, 86, 69, 51),
                           fontSize: 28,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                       const Spacer(),
-                      const Icon(
-                        Icons.favorite_border_rounded,
-                        color: Colors.white,
+                      IconButton(
+                        onPressed: () {
+                          final fixedImage = widget.imagePath.replaceAll(
+                            "localhost",
+                            "127.0.0.1",
+                          );
+                          fav.toggleFavorite(
+                            FavoriteItem(
+                              menuId: widget.menuId,
+                              name: widget.name,
+                              price: widget.price,
+                              imagePath: fixedImage,
+                            ),
+                          );
+                          // fav.toggleFavorite(
+                          //   FavoriteItem(
+                          //     menuId: widget.menuId, // ✅ CHANGED
+                          //     name: widget.name,
+                          //     price: widget.price,
+                          //     imagePath: widget.imagePath,
+                          //   ),
+                          // );
+
+                          debugPrint(
+                            "Fav count: ${context.read<FavoriteProvider>().items.length}",
+                          );
+                        },
+                        icon: Icon(
+                          isFav
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          color: Colors.red,
+                        ),
                       ),
+
+                      // const Icon(
+                      //   Icons.favorite_border_rounded,
+                      //   color: Colors.red,
+                      // ),
                     ],
                   ),
                 ),
@@ -223,7 +263,8 @@ class _CoffeeDetailScreenState extends State<CoffeeDetailScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => CustomizeDrinkScreen(
-                                      initial: customize, imagePath: '',
+                                      initial: customize,
+                                      imagePath: '',
                                     ),
                                   ),
                                 );
