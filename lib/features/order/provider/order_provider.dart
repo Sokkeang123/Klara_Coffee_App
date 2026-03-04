@@ -61,10 +61,7 @@ OrderModel createLocalPendingOrder({
     totalCost: totalCost,
     status: "Pending",
     createdAt: DateTime.now(),
-    // if you have these fields in your model, include:
-    // paymentMethod: paymentMethod,
-    // deliveryType: isPickup ? "Pick up" : "Delivery",
-    // isTemp: true,
+    items: const [],
   );
 }
 

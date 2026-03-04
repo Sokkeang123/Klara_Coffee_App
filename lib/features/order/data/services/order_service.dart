@@ -65,6 +65,7 @@
 // }
 
 import 'dart:convert';
+import 'package:flutter_application_1/core/storage/token_storage.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../../core/constants/api_endpoints.dart';
@@ -77,7 +78,8 @@ class OrderService {
   required List<Map<String, dynamic>> items,
   required double totalCost,
 }) async {
-  final token = await UserStorage.getToken();
+  // final token = await UserStorage.getToken();
+  final token = await TokenStorage.getToken();
 
   final res = await http.post(
     Uri.parse(ApiEndpoints.orders),
@@ -102,7 +104,8 @@ class OrderService {
 }
 
   Future<List<OrderModel>> getMyOrders() async {
-    final token = await UserStorage.getToken();
+    // final token = await UserStorage.getToken();
+    final token = await TokenStorage.getToken();
 
     final res = await http.get(
       Uri.parse(ApiEndpoints.myOrders),

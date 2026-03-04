@@ -26,6 +26,27 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.microtask(() => context.read<MenuProvider>().fetchMenus());
   }
 
+  Widget _buildAnyImage(String path, {double? width, double? height}) {
+    final isNetwork = path.startsWith("http");
+
+    if (isNetwork) {
+      return Image.network(
+        path,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => Image.asset(
+          "assets/images/matcha.png",
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+
+    return Image.asset(path, width: width, height: height, fit: BoxFit.cover);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -69,14 +90,28 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         // ✅ Convert DB menus -> your old UI Map (name/price/image)
+        // final apiItems = menuProv.menus.map<Map<String, dynamic>>((m) {
+        //   final price = m.price.toStringAsFixed(2);
+        //   return {
+        //     "id": m.id,
+        //     "name": m.name,
+        //     "price": "\$$price",
+        //     // keep old UI image (do not change UI)
+        //     "image": "assets/images/matcha.png",
+        //   };
+        // }).toList();
         final apiItems = menuProv.menus.map<Map<String, dynamic>>((m) {
           final price = m.price.toStringAsFixed(2);
+
+          final img = (m.imageUrl != null && m.imageUrl!.isNotEmpty)
+              ? "${ApiEndpoints.baseUrl}${m.imageUrl}"
+              : "assets/images/matcha.png";
+
           return {
             "id": m.id,
             "name": m.name,
             "price": "\$$price",
-            // keep old UI image (do not change UI)
-            "image": "assets/images/matcha.png",
+            "image": img,
           };
         }).toList();
 
@@ -122,7 +157,8 @@ class _HomeScreenState extends State<HomeScreen> {
               // Promo Banner (same) - if it fails on web, it’s internet permission/cors, UI still same
               ClipRRect(
                 borderRadius: BorderRadius.circular(15),
-                child: Image.network(
+                child: 
+                Image.network(
                   '../../../assets/images/promo_banner.png',
                   height: 190,
                   width: double.infinity,
@@ -198,11 +234,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(13),
                 ),
-                child: Image.asset(
-                  item['image']!,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
+                // child: Image.asset(
+                //   item['image']!,
+                //   width: double.infinity,
+                //   fit: BoxFit.cover,
+                // ),
+                child: _buildAnyImage(item['image']!, width: double.infinity),
               ),
             ),
             Padding(

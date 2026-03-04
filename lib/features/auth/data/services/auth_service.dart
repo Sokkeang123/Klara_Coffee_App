@@ -18,7 +18,8 @@ class AuthService {
     final user = res["user"];
 
     if (token is String && token.isNotEmpty) {
-      await TokenStorage.saveToken(token);
+      // await TokenStorage.saveToken(token);
+      await UserStorage.saveToken(token); // ✅ FIX
     } else {
       throw Exception(res["message"] ?? "Login failed");
     }
