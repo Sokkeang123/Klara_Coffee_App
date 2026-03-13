@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-// import '../provider/order_provider.dart';
 import 'provider/order_provider.dart';
 
 class MyOrdersScreen extends StatefulWidget {
@@ -47,7 +46,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
 
         return Card(
           child: ListTile(
-            title: Text("Order #${o.id}  •  \$${o.totalCost.toStringAsFixed(2)}"),
+            title: Text(
+              "${o.displayName}  •  \$${o.totalCost.toStringAsFixed(2)}",
+            ),
             subtitle: Text("Created: ${o.createdAt.toLocal()}"),
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -56,7 +57,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: c),
               ),
-              child: Text(o.status, style: TextStyle(color: c, fontWeight: FontWeight.bold)),
+              child: Text(
+                o.status,
+                style: TextStyle(color: c, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         );

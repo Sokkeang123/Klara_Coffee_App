@@ -88,23 +88,14 @@ class _HomeScreenState extends State<HomeScreen> {
         if (menuProv.menus.isEmpty) {
           return const Center(child: Text("No menu items"));
         }
-
-        // ✅ Convert DB menus -> your old UI Map (name/price/image)
-        // final apiItems = menuProv.menus.map<Map<String, dynamic>>((m) {
-        //   final price = m.price.toStringAsFixed(2);
-        //   return {
-        //     "id": m.id,
-        //     "name": m.name,
-        //     "price": "\$$price",
-        //     // keep old UI image (do not change UI)
-        //     "image": "assets/images/matcha.png",
-        //   };
-        // }).toList();
         final apiItems = menuProv.menus.map<Map<String, dynamic>>((m) {
           final price = m.price.toStringAsFixed(2);
 
+          // final img = (m.imageUrl != null && m.imageUrl!.isNotEmpty)
+          //     ? "${ApiEndpoints.baseUrl}${m.imageUrl}"
+          //     : "assets/images/matcha.png";
           final img = (m.imageUrl != null && m.imageUrl!.isNotEmpty)
-              ? "${ApiEndpoints.baseUrl}${m.imageUrl}"
+              ? m.imageUrl!
               : "assets/images/matcha.png";
 
           return {
@@ -115,7 +106,6 @@ class _HomeScreenState extends State<HomeScreen> {
           };
         }).toList();
 
-        // ✅ Split into 2 sections (keep UI same)
         final dailySpecials = apiItems.take(6).toList(); // horizontal list
         final favorites = apiItems; // vertical list
 
@@ -157,8 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // Promo Banner (same) - if it fails on web, it’s internet permission/cors, UI still same
               ClipRRect(
                 borderRadius: BorderRadius.circular(15),
-                child: 
-                Image.network(
+                child: Image.network(
                   '../../../assets/images/promo_banner.png',
                   height: 190,
                   width: double.infinity,
@@ -354,9 +343,12 @@ class _HomeScreenState extends State<HomeScreen> {
             "id": m.id,
             "name": m.name,
             "price": "\$$price",
-            "image": m.imageUrl != null
-                ? "${ApiEndpoints.baseUrl}${m.imageUrl}"
-                : "assets/images/matcha.png", // keep UI
+            // "image": m.imageUrl != null
+            //     ? "${ApiEndpoints.baseUrl}${m.imageUrl}"
+            //     : "assets/images/matcha.png", // keep UI
+            "image": (m.imageUrl != null && m.imageUrl!.isNotEmpty)
+                ? m.imageUrl!
+                : "assets/images/matcha.png",
           };
         }).toList();
 
@@ -392,20 +384,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-  // void _navigateToDetail(Map<String, dynamic> item) {
-  //   final int menuId = item["id"] as int;
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (_) => CoffeeDetailScreen(
-  //         menuId: menuId,
-  //         name: item['name']!,
-  //         price: item['price']!,
-  //         imagePath: item['image']!,
-  //       ),
-  //     ),
-  //   );
-  // }
 
   // Helper: Add to Cart Logic (unchanged)
   void _addToCart(Map<String, dynamic> item) {
@@ -437,25 +415,4 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
     ).showSnackBar(SnackBar(content: Text("${item['name']} added to cart!")));
   }
-  // void _addToCart(Map<String, dynamic> item) {
-  //   final price = double.tryParse(item['price']!.replaceAll('\$', '')) ?? 0.0;
-  //   final menuId = item["id"] as int;
-  //   context.read<CartProvider>().addItem(
-  //     CartItem(
-  //       menuId: menuId,
-  //       name: item['name']!,
-  //       imagePath: item['image']!,
-  //       unitPrice: price,
-  //       size: "medium",
-  //       milk: "Regular",
-  //       whippedCream: false,
-  //       syrup: "None",
-  //       qty: 1,
-  //     ),
-  //   );
-
-  //   ScaffoldMessenger.of(
-  //     context,
-  //   ).showSnackBar(SnackBar(content: Text("${item['name']} added to cart!")));
-  // }
 }

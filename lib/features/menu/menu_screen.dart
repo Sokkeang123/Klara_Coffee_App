@@ -147,12 +147,20 @@ class _MenuScreenState extends State<MenuScreen> {
                     child: SizedBox(
                       width: 52,
                       height: 52,
+                      // child: imageUrl.isEmpty
+                      //     ? const Icon(Icons.local_cafe)
+                      //     : Image.network(
+                      //         "${ApiEndpoints.baseUrl}$imageUrl",
+                      //         fit: BoxFit.cover,
+                      //         errorBuilder: (_, __, ___) => const Icon(Icons.local_cafe),
+                      //       ),
                       child: imageUrl.isEmpty
                           ? const Icon(Icons.local_cafe)
                           : Image.network(
-                              "${ApiEndpoints.baseUrl}$imageUrl",
+                              imageUrl,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.local_cafe),
+                              errorBuilder: (_, __, ___) =>
+                                  const Icon(Icons.local_cafe),
                             ),
                     ),
                   ),

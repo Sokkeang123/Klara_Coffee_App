@@ -1,5 +1,3 @@
-
-
 // class OrderModel {
 //   final int id;
 //   final String status;
@@ -22,7 +20,6 @@
 //     );
 //   }
 // }
-
 
 // class OrderModel {
 //   final int id;
@@ -89,16 +86,17 @@ class OrderModel {
 
     final items = (rawItems is List)
         ? rawItems
-            .where((e) => e != null)
-            .map((e) => OrderItemModel.fromJson(Map<String, dynamic>.from(e)))
-            .toList()
+              .where((e) => e != null)
+              .map((e) => OrderItemModel.fromJson(Map<String, dynamic>.from(e)))
+              .toList()
         : <OrderItemModel>[];
 
     return OrderModel(
       id: (json["id"] as num).toInt(),
       status: (json["status"] ?? "").toString(),
       totalCost: _toDouble(json["totalCost"]),
-      createdAt: DateTime.tryParse(json["createdAt"]?.toString() ?? "") ??
+      createdAt:
+          DateTime.tryParse(json["createdAt"]?.toString() ?? "") ??
           DateTime.now(),
       items: items,
     );
