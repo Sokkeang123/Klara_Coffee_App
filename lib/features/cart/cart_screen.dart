@@ -142,7 +142,6 @@ class _CartBody extends StatelessWidget {
   }
 }
 
-/// ✅ ADD NEW WIDGET: Order History (Pending/Processing/Completed)
 class _OrdersHistoryView extends StatefulWidget {
   const _OrdersHistoryView();
 
@@ -152,7 +151,6 @@ class _OrdersHistoryView extends StatefulWidget {
 
 class _OrdersHistoryViewState extends State<_OrdersHistoryView> {
   Widget _orderImage(OrderModel order) {
-    // default image widget
     Widget fallback() => ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: Image.asset(
@@ -179,7 +177,7 @@ class _OrdersHistoryViewState extends State<_OrdersHistoryView> {
         width: 56,
         height: 56,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => fallback(), // ✅ fallback if 404
+        errorBuilder: (_, __, ___) => fallback(),
       ),
     );
   }
@@ -187,8 +185,6 @@ class _OrdersHistoryViewState extends State<_OrdersHistoryView> {
   @override
   void initState() {
     super.initState();
-
-    // ✅ Fetch orders when cart is empty
     Future.microtask(() => context.read<OrderProvider>().fetchMyOrders());
   }
 
@@ -238,33 +234,24 @@ class _OrdersHistoryViewState extends State<_OrdersHistoryView> {
         final o = prov.orders[i];
         final c = _statusColor(o.status);
 
-        // return Card(
-        //   child: ListTile(
-        //     title: Text(
-        //       "Order #${o.id}  •  \$${o.totalCost.toStringAsFixed(2)}",
-        //       style: const TextStyle(fontWeight: FontWeight.w800),
-        //     ),
-        //     subtitle: Text("Created: ${o.createdAt.toLocal()}"),
-        //     trailing: Container(
-        //       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        //       decoration: BoxDecoration(
-        //         color: c.withOpacity(0.15),
-        //         borderRadius: BorderRadius.circular(12),
-        //         border: Border.all(color: c),
-        //       ),
-        //       child: Text(
-        //         o.status,
-        //         style: TextStyle(color: c, fontWeight: FontWeight.bold),
-        //       ),
-        //     ),
-        //   ),
-        // );
+        final firstItemName = o.items.isNotEmpty
+            ? ((o.items.first.menu?.name ?? "").isNotEmpty
+                  ? o.items.first.menu!.name
+                  : "Unknown Menu")
+            : "Unknown Menu";
+
+        final extraText = o.items.length > 1
+            ? " +${o.items.length - 1} more"
+            : "";
+
         return Card(
           child: ListTile(
-            leading: _orderImage(o), // ✅ ADD THIS LINE (shows image)
+            leading: _orderImage(o),
             title: Text(
-              "Order #${o.id}  •  \$${o.totalCost.toStringAsFixed(2)}",
+              "$firstItemName$extraText  •  \$${o.totalCost.toStringAsFixed(2)}",
               style: const TextStyle(fontWeight: FontWeight.w800),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             subtitle: Text("Created: ${o.createdAt.toLocal()}"),
             trailing: Container(
@@ -285,6 +272,7 @@ class _OrdersHistoryViewState extends State<_OrdersHistoryView> {
     );
   }
 }
+
 
 class _CartRow extends StatelessWidget {
   final String name;

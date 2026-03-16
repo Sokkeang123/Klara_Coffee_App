@@ -44,37 +44,43 @@ class OrderProvider extends ChangeNotifier {
   }
 
   /// 🧹 Clear cache if needed
+  // void clearOrders() {
+  //   orders.clear();
+  //   _loadedOnce = false;
+  //   notifyListeners();
+  // }
   void clearOrders() {
     orders.clear();
+    error = null;
+    loading = false;
     _loadedOnce = false;
     notifyListeners();
   }
-OrderModel createLocalPendingOrder({
-  required double totalCost,
-  required String paymentMethod,
-  required bool isPickup,
-}) {
-  final tempId = DateTime.now().millisecondsSinceEpoch; // temp unique id
 
-  return OrderModel(
-    id: tempId,
-    totalCost: totalCost,
-    status: "Pending",
-    createdAt: DateTime.now(),
-    items: const [],
-  );
-}
+  OrderModel createLocalPendingOrder({
+    required double totalCost,
+    required String paymentMethod,
+    required bool isPickup,
+  }) {
+    final tempId = DateTime.now().millisecondsSinceEpoch; // temp unique id
 
-/// Replace temp order with real order from API (optional)
-void replaceTempOrder(OrderModel temp, OrderModel real) {
-  final idx = orders.indexWhere((o) => o.id == temp.id);
-  if (idx != -1) {
-    orders[idx] = real;
-  } else {
-    orders.insert(0, real);
+    return OrderModel(
+      id: tempId,
+      totalCost: totalCost,
+      status: "Pending",
+      createdAt: DateTime.now(),
+      items: const [],
+    );
   }
-  notifyListeners();
-}
 
-
+  /// Replace temp order with real order from API (optional)
+  void replaceTempOrder(OrderModel temp, OrderModel real) {
+    final idx = orders.indexWhere((o) => o.id == temp.id);
+    if (idx != -1) {
+      orders[idx] = real;
+    } else {
+      orders.insert(0, real);
+    }
+    notifyListeners();
+  }
 }
